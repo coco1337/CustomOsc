@@ -3,27 +3,70 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="CustomOsc.Settings"
              Title="Settings">
-  <ListView ItemsSource="{Binding AvatarParameters}">
-    <ListView.ItemTemplate>
-      <DataTemplate>
-        <ViewCell>
-          <Grid Padding="10">
-            <Grid.RowDefinitions>
-              <RowDefinition Height="Auto"/>
-              <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-              <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            <Label Text="{Binding Name}"
-              FontAttributes="Bold" />
-            <Label Grid.Column="1"
-              Text="{Binding AvatarParameterName}"
-              FontAttributes="Italic"
-              VerticalOptions="End" />
-          </Grid>
-        </ViewCell>
-      </DataTemplate>
-    </ListView.ItemTemplate>
-  </ListView>
+  <ScrollView>
+    <StackLayout>
+      <HorizontalStackLayout>
+        <Button Text="Save" Clicked="SaveBtn_Clicked"/>
+        <Button Text="Load" Clicked="LoadBtn_Clicked"/>
+      </HorizontalStackLayout>
+
+      <Grid Padding="10">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto"/>
+          <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <Label Grid.Row="0"
+                     Text="Year"
+                     FontAttributes="Bold"/>
+        <Entry Grid.Row="0"
+               x:Name="ParamYear"
+                     Grid.Column="1"
+                     Placeholder=""/>
+        <Label Grid.Row="1"
+                     Text="Month"
+                     FontAttributes="Bold"/>
+        <Entry Grid.Row="1"
+               x:Name="ParamMonth"
+                     Grid.Column="1"
+                     Placeholder=""/>
+        <Label Grid.Row="2"
+                     Text="Day"
+                     FontAttributes="Bold"/>
+        <Entry Grid.Row="2"
+               x:Name="ParamDay"
+                     Grid.Column="1"
+                     Placeholder=""/>
+        <Label Grid.Row="3"
+                     Text="Hour"
+                     FontAttributes="Bold"/>
+        <Entry Grid.Row="3"
+               x:Name="ParamHour"
+                     Grid.Column="1"
+                     Placeholder=""/>
+        <Label Grid.Row="4"
+                     Text="Minute"
+                     FontAttributes="Bold"/>
+        <Entry Grid.Row="4"
+               x:Name="ParamMinute"
+                     Grid.Column="1"
+                     Placeholder=""/>
+        <Label Grid.Row="5"
+                     Text="Second"
+                     FontAttributes="Bold"/>
+        <Entry Grid.Row="5"
+               x:Name="ParamSecond"
+                     Grid.Column="1"
+                     Placeholder=""/>
+      </Grid>
+
+    </StackLayout>
+  </ScrollView>
 </ContentPage>

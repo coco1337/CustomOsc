@@ -1,4 +1,5 @@
-﻿using System.Net.Sockets;
+﻿using System.Net;
+using System.Net.Sockets;
 
 namespace CustomOsc.Network;
 
@@ -6,23 +7,63 @@ internal sealed class OscClient
 {
   private const string IP_ADDR = "127.0.0.1";
   private const int SEND_PORT = 9000;
+  private IPEndPoint destination;
 
-  private UdpClient udpClient;
+  private Socket udpSocket;
 
   private byte[] byteArray;
-  private int writePos;
 
-  private void ResetWritePos() => writePos = 0;
+  private int writePos = 19;
 
-  internal bool IsConnected => this.udpClient.Client.Connected;
+  private void ResetWritePos() => writePos = 19;
+
+  internal bool IsConnected => this.udpSocket.Connected;
 
   public void Init()
   {
-    udpClient = new UdpClient(IP_ADDR, SEND_PORT);
+    if (!ConnectToServer()) return;
 
-    byteArray = GC.AllocateArray<byte>(4096, true);
+    this.byteArray = GC.AllocateArray<byte>(4096, true);
 
-    // var bytes = new OscCore.OscMessage($"/avatar/parameters/Cap", this.test).ToByteArray();
+    // /avatar/parameters/
+    this.byteArray[0] = 0x2F;
+    this.byteArray[1] = 0x61;
+    this.byteArray[2] = 0x76;
+    this.byteArray[3] = 0x61;
+    this.byteArray[4] = 0x74;
+    this.byteArray[5] = 0x61;
+    this.byteArray[6] = 0x72;
+    this.byteArray[7] = 0x2F;
+    this.byteArray[8] = 0x70;
+    this.byteArray[9] = 0x61;
+    this.byteArray[10] = 0x72;
+    this.byteArray[11] = 0x61;
+    this.byteArray[12] = 0x6D;
+    this.byteArray[13] = 0x65;
+    this.byteArray[14] = 0x74;
+    this.byteArray[15] = 0x65;
+    this.byteArray[16] = 0x72;
+    this.byteArray[17] = 0x73;
+    this.byteArray[18] = 0x2F;
+  }
+
+  public bool ConnectToServer()
+  {
+    try
+    {
+      this.udpSocket = new Socket(SocketType.Dgram, ProtocolType.Udp);
+      var ipAddr = IPAddress.Parse(IP_ADDR);
+      this.destination = new IPEndPoint(ipAddr, SEND_PORT);
+
+      this.udpSocket.Connect(this.destination);
+
+      return true;
+    }
+    catch (Exception exception)
+    {
+      Console.WriteLine(exception.ToString());
+      return false;
+    }
   }
 
   public void Send(string address, int val)
@@ -33,7 +74,7 @@ internal sealed class OscClient
     this.byteArray[writePos++] = 0x20;
     Write(val);
 
-    this.udpClient.Send(new ReadOnlySpan<byte>(this.byteArray, 0, writePos));
+    Send(new ReadOnlySpan<byte>(this.byteArray, 0, writePos));
     ResetWritePos();
   }
 
@@ -45,10 +86,25 @@ internal sealed class OscClient
     else this.byteArray[writePos++] = 0x46;
     this.byteArray[writePos++] = 0x20;
 
-    this.udpClient.Send(new ReadOnlySpan<byte>(this.byteArray, 0, writePos));
+    Send(new ReadOnlySpan<byte>(this.byteArray, 0, writePos));
     ResetWritePos();
   }
 
+  // send data via socket
+  private void Send(ReadOnlySpan<byte> sendData)
+  {
+    try
+    {
+      this.udpSocket.SendTo(sendData, this.destination);  
+    } 
+    catch(Exception exception)
+    {
+      
+    }
+  }
+
+  #region Write
+  // TODO : matching with OscTypes
   private void Write(int data)
   {
     this.byteArray[writePos++] = (byte)(data >> 24);
@@ -59,9 +115,9 @@ internal sealed class OscClient
 
   private void Write(string data)
   {
-    foreach (var c in data)
+    foreach (var ch in data)
     {
-      this.byteArray[writePos++] = (byte)c;
+      this.byteArray[writePos++] = (byte)ch;
     }
 
     var alignedLength = (data.Length + 3) & ~3;
@@ -72,8 +128,10 @@ internal sealed class OscClient
       this.byteArray[writePos] = 0;
     }
   }
+  #endregion
 } 
 
+/*
 internal static class OscTag
 {
   internal static readonly byte[] OscTypes =
@@ -95,3 +153,4 @@ internal static class OscTag
     0x2C, 0x66, 0x66, 0x66, // ",fff" Vector3
   };
 }
+*/

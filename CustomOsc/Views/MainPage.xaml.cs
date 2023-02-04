@@ -13,13 +13,12 @@ public partial class MainPage : ContentPage
 
 	private OscClient oscClient = new();
 	private Thread udpRecvThread = null;
-	private int updateDuration = 1000;
+	private int updateDuration = 100;
 
-	private const int SEND_PORT = 9000;
 	private const int RECV_PORT = 9001;
 
-	int count = 0;
-
+	private bool isInitialized = false;
+	
 	private bool test = false;
 
 	public MainPage()
@@ -27,20 +26,9 @@ public partial class MainPage : ContentPage
 		InitializeComponent();
 	}
 
-	private void OnCounterClicked(object sender, EventArgs e)
-	{
-		count++;
-
-		if (count == 1)
-			CounterBtn.Text = $"Clicked {count} time";
-		else
-			CounterBtn.Text = $"Clicked {count} times";
-
-		SemanticScreenReader.Announce(CounterBtn.Text);
-	}
-
   private async void OnConnectClicked(object sender, EventArgs e)
   {
+		if (isInitialized) return;
 		this.oscClient.Init();
 
 		if (this.oscClient.IsConnected)
@@ -53,6 +41,8 @@ public partial class MainPage : ContentPage
 		timer.Interval = this.updateDuration;
 		timer.Elapsed += new System.Timers.ElapsedEventHandler(TimerElapsed);
 		timer.Start();
+
+		isInitialized = true;
 
 		while (true)
 		{
@@ -84,7 +74,9 @@ public partial class MainPage : ContentPage
 
 	private void TimerElapsed(object sender, ElapsedEventArgs e)
 	{
-		this.oscClient.Send("/avatar/parameters/GlassesToggle", this.test);
+		if (!this.oscClient.IsConnected) return;
+
+		this.oscClient.Send("GlassesToggle", this.test);
 		this.test = !this.test;
 	}
 }
