@@ -99,10 +99,7 @@ internal sealed class OscClient
   {
     try
     {
-      var oscMessage = new OscCore.OscMessage("/avatar/parameters/test", 1).ToByteArray();
-      var oscMessage2 = new OscCore.OscMessage("/avatar/parameters/test", 10000).ToByteArray();
-      var oscMessage3 = new OscCore.OscMessage("/avatar/parameters/test", 1000000000).ToByteArray();
-      this.udpSocket.SendTo(sendData, this.destination);  
+      this.udpSocket.Send(sendData);
     } 
     catch(Exception exception)
     {
@@ -136,6 +133,7 @@ internal sealed class OscClient
     }
   }
 
+  // write byte data for space(0x00)
   private void AddZero(int count)
   {
     for (int i = 0; i < count; ++i)

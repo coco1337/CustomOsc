@@ -1,4 +1,5 @@
-﻿using CustomOsc.Network;
+﻿using CustomOsc.Global;
+using CustomOsc.Network;
 using System.Collections.Concurrent;
 using System.Net.Sockets;
 using System.Text;
@@ -13,7 +14,9 @@ public partial class MainPage : ContentPage
 
 	private OscClient oscClient = new();
 	private Thread udpRecvThread = null;
-	private int updateDuration = 100;
+
+	private int updateDuration = 1000;
+	private DateTime cacheDate;
 
 	private const int RECV_PORT = 9001;
 
@@ -36,6 +39,8 @@ public partial class MainPage : ContentPage
 		// recv loop
 		this.udpRecvThread = new Thread(() => UdpListener());
 		this.udpRecvThread.Start();
+
+		SendInitTime();
 
 		var timer = new System.Timers.Timer();
 		timer.Interval = this.updateDuration;
@@ -72,12 +77,32 @@ public partial class MainPage : ContentPage
 		}
 	}
 
+	// only send on first time
+	private void SendInitTime()
+	{
+		this.cacheDate = DateTime.Now;
+    this.oscClient.Send(GlobalSetting.Config.Watch.Year, this.cacheDate.Year);
+    this.oscClient.Send(GlobalSetting.Config.Watch.Month, this.cacheDate.Month);
+    this.oscClient.Send(GlobalSetting.Config.Watch.Day, this.cacheDate.Day);
+    this.oscClient.Send(GlobalSetting.Config.Watch.Hour, this.cacheDate.Hour);
+    this.oscClient.Send(GlobalSetting.Config.Watch.Minute, this.cacheDate.Minute);
+    this.oscClient.Send(GlobalSetting.Config.Watch.Second, this.cacheDate.Second);
+  }
+
 	private void TimerElapsed(object sender, ElapsedEventArgs e)
 	{
 		if (!this.oscClient.IsConnected) return;
 
-		//this.oscClient.Send("GlassesToggle", this.test);
-		this.oscClient.Send("test", 1000000000);
+		// check global setting
+		if (!GlobalSetting.IsSet) return;
+		
+		var currentTime = DateTime.Now;
+		if (this.cacheDate.Year != currentTime.Year) this.oscClient.Send(GlobalSetting.Config.Watch.Year, currentTime.Year);
+		if (this.cacheDate.Month != currentTime.Month) this.oscClient.Send(GlobalSetting.Config.Watch.Month, currentTime.Month);
+		if (this.cacheDate.Day != currentTime.Day) this.oscClient.Send(GlobalSetting.Config.Watch.Day, currentTime.Day);
+		if (this.cacheDate.Hour != currentTime.Hour) this.oscClient.Send(GlobalSetting.Config.Watch.Hour, currentTime.Hour);
+		if (this.cacheDate.Minute != currentTime.Minute) this.oscClient.Send(GlobalSetting.Config.Watch.Minute, currentTime.Minute);
+		if (this.cacheDate.Second != currentTime.Second) this.oscClient.Send(GlobalSetting.Config.Watch.Second, currentTime.Second);
 		this.test = !this.test;
 	}
 }
