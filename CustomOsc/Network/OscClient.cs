@@ -73,15 +73,8 @@ internal sealed class OscClient
 
     this.byteArray[writePos++] = 0x2C;
     this.byteArray[writePos++] = 0x69;
-    AddZero(5);
-
-    var valBytes = BitConverter.GetBytes(val);
-
-    foreach(var b in valBytes)
-    {
-      if (b == 0x00) continue;
-      this.byteArray[writePos++] = b;
-    }
+    AddZero(2);
+    Write(val);
 
     Send(new ReadOnlySpan<byte>(this.byteArray, 0, writePos));
     ResetWritePos();
