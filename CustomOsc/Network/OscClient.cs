@@ -69,10 +69,19 @@ internal sealed class OscClient
   public void Send(string address, int val)
   {
     Write(address);
+    AddZero(1);
+
     this.byteArray[writePos++] = 0x2C;
     this.byteArray[writePos++] = 0x69;
-    this.byteArray[writePos++] = 0x20;
-    Write(val);
+    AddZero(5);
+
+    var valBytes = BitConverter.GetBytes(val);
+
+    foreach(var b in valBytes)
+    {
+      if (b == 0x00) continue;
+      this.byteArray[writePos++] = b;
+    }
 
     Send(new ReadOnlySpan<byte>(this.byteArray, 0, writePos));
     ResetWritePos();
@@ -81,10 +90,12 @@ internal sealed class OscClient
   public void Send(string address, bool b)
   {
     Write(address);
+    AddZero(4);
     this.byteArray[writePos++] = 0x2C;
     if (b) this.byteArray[writePos++] = 0x54;
     else this.byteArray[writePos++] = 0x46;
-    this.byteArray[writePos++] = 0x20;
+    this.byteArray[writePos++] = 0x00;
+    this.byteArray[writePos++] = 0x00;
 
     Send(new ReadOnlySpan<byte>(this.byteArray, 0, writePos));
     ResetWritePos();
@@ -95,6 +106,9 @@ internal sealed class OscClient
   {
     try
     {
+      var oscMessage = new OscCore.OscMessage("/avatar/parameters/test", 1).ToByteArray();
+      var oscMessage2 = new OscCore.OscMessage("/avatar/parameters/test", 10000).ToByteArray();
+      var oscMessage3 = new OscCore.OscMessage("/avatar/parameters/test", 1000000000).ToByteArray();
       this.udpSocket.SendTo(sendData, this.destination);  
     } 
     catch(Exception exception)
@@ -127,6 +141,12 @@ internal sealed class OscClient
     {
       this.byteArray[writePos] = 0;
     }
+  }
+
+  private void AddZero(int count)
+  {
+    for (int i = 0; i < count; ++i)
+      this.byteArray[writePos++] = 0x00;
   }
   #endregion
 } 

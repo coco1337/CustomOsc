@@ -76,7 +76,8 @@ public partial class MainPage : ContentPage
 	{
 		if (!this.oscClient.IsConnected) return;
 
-		this.oscClient.Send("GlassesToggle", this.test);
+		//this.oscClient.Send("GlassesToggle", this.test);
+		this.oscClient.Send("test", 1);
 		this.test = !this.test;
 	}
 }
