@@ -29,14 +29,27 @@
         HorizontalOptions="Center" />
 
       <Button
-        x:Name="ConnectBtn"
-        Text="Connect"
+        x:Name="ConnectTimerBtn"
+        Text="ConnectTimer"
         SemanticProperties.Description="Try to connect"
-        Clicked="OnConnectClicked"
+        Clicked="OnConnectTimerClicked"
         HorizontalOptions="Center"/>
 
       <Label
-        x:Name="ConnectStatus"
+        x:Name="ConnectTimerStatus"
+        Text=""
+        FontSize="32"
+        HorizontalOptions="Center"/>
+
+      <Button
+        x:Name="ConnectHeartRateBtn"
+        Text="ConnectHeartRate"
+        SemanticProperties.Description="Try to connect"
+        Clicked="OnConnectHeartRateClicked"
+        HorizontalOptions="Center"/>
+
+      <Label
+        x:Name="ConnectHeartRateStatus"
         Text=""
         FontSize="32"
         HorizontalOptions="Center"/>

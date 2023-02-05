@@ -13,6 +13,7 @@ public partial class MainPage : ContentPage
 	private readonly ConcurrentQueue<byte[]> sendQueue = new();
 
 	private OscClient oscClient = new();
+	private HeartRateClient heartRateClient = new();
 	private Thread udpRecvThread = null;
 
 	private int updateDuration = 1000;
@@ -21,6 +22,7 @@ public partial class MainPage : ContentPage
 	private const int RECV_PORT = 9001;
 
 	private bool isInitialized = false;
+	private bool isHeartBeatStart = false;
 	
 	private bool test = false;
 
@@ -29,13 +31,13 @@ public partial class MainPage : ContentPage
 		InitializeComponent();
 	}
 
-  private async void OnConnectClicked(object sender, EventArgs e)
+  private async void OnConnectTimerClicked(object sender, EventArgs e)
   {
 		if (isInitialized) return;
 		this.oscClient.Init();
 
 		if (this.oscClient.IsConnected)
-			ConnectStatus.Text = "Connected";
+      ConnectTimerStatus.Text = "Connected";
 		// recv loop
 		this.udpRecvThread = new Thread(() => UdpListener());
 		this.udpRecvThread.Start();
@@ -89,21 +91,31 @@ public partial class MainPage : ContentPage
     this.oscClient.Send(GlobalSetting.Config.Watch.Second, this.cacheDate.Second);
   }
 
-	private void TimerElapsed(object sender, ElapsedEventArgs e)
+	private async void TimerElapsed(object sender, ElapsedEventArgs e)
 	{
-		if (!this.oscClient.IsConnected) return;
+		// TIMER
+		if (this.oscClient.IsConnected)
+		{
+      // check global setting
+      if (!GlobalSetting.IsSet) return;
 
-		// check global setting
-		if (!GlobalSetting.IsSet) return;
-		
-		var currentTime = DateTime.Now;
-		if (this.cacheDate.Year != currentTime.Year) this.oscClient.Send(GlobalSetting.Config.Watch.Year, currentTime.Year);
-		if (this.cacheDate.Month != currentTime.Month) this.oscClient.Send(GlobalSetting.Config.Watch.Month, currentTime.Month);
-		if (this.cacheDate.Day != currentTime.Day) this.oscClient.Send(GlobalSetting.Config.Watch.Day, currentTime.Day);
-		if (this.cacheDate.Hour != currentTime.Hour) this.oscClient.Send(GlobalSetting.Config.Watch.Hour, currentTime.Hour);
-		if (this.cacheDate.Minute != currentTime.Minute) this.oscClient.Send(GlobalSetting.Config.Watch.Minute, currentTime.Minute);
-		if (this.cacheDate.Second != currentTime.Second) this.oscClient.Send(GlobalSetting.Config.Watch.Second, currentTime.Second);
-		this.test = !this.test;
+      var currentTime = DateTime.Now;
+      if (this.cacheDate.Year != currentTime.Year) this.oscClient.Send(GlobalSetting.Config.Watch.Year, currentTime.Year);
+      if (this.cacheDate.Month != currentTime.Month) this.oscClient.Send(GlobalSetting.Config.Watch.Month, currentTime.Month);
+      if (this.cacheDate.Day != currentTime.Day) this.oscClient.Send(GlobalSetting.Config.Watch.Day, currentTime.Day);
+      if (this.cacheDate.Hour != currentTime.Hour) this.oscClient.Send(GlobalSetting.Config.Watch.Hour, currentTime.Hour);
+      if (this.cacheDate.Minute != currentTime.Minute) this.oscClient.Send(GlobalSetting.Config.Watch.Minute, currentTime.Minute);
+      if (this.cacheDate.Second != currentTime.Second) this.oscClient.Send(GlobalSetting.Config.Watch.Second, currentTime.Second);
+      this.test = !this.test;
+    }
 	}
+
+  private async void OnConnectHeartRateClicked(object sender, EventArgs e)
+  {
+		isHeartBeatStart = true;
+
+		this.heartRateClient = new HeartRateClient();
+		await this.heartRateClient.StartClient();
+  }
 }
 
